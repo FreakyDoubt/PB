@@ -1,0 +1,189 @@
+/* ============================================================
+   styles.css — Global styles + design system
+   
+   BAGIAN-BAGIAN:
+   1. Import Tailwind + animasi
+   2. @theme — mapping CSS vars ke Tailwind classes
+   3. :root — warna light mode (ubah di sini kalau mau ganti warna)
+   4. .dark — warna dark mode
+   5. @layer base — reset dasar
+   6. /* Photobook * / — style khusus buku & animasi
+   
+   Untuk ubah warna utama: ubah --primary di :root
+   Untuk ubah background: ubah --background & --warm-gradient di :root
+   ============================================================ */
+
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* ── Design tokens ────────────────────────────────────────── */
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+}
+
+/* ── Warna light mode ─────────────────────────────────────── */
+/* Untuk ganti palet warna: ubah nilai oklch() di bawah ini   */
+:root {
+  --radius: 0.625rem;
+  --background: oklch(0.94 0.04 75);
+  --foreground: oklch(0.28 0.05 50);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.28 0.05 50);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.28 0.05 50);
+  --primary: oklch(0.55 0.13 45);
+  --primary-foreground: oklch(0.98 0.02 80);
+  --secondary: oklch(0.88 0.05 70);
+  --secondary-foreground: oklch(0.28 0.05 50);
+  --muted: oklch(0.9 0.04 75);
+  --muted-foreground: oklch(0.45 0.06 55);
+  --accent: oklch(0.78 0.12 60);
+  --accent-foreground: oklch(0.28 0.05 50);
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(0.98 0.02 80);
+  --border: oklch(0.82 0.04 65);
+  --input: oklch(0.82 0.04 65);
+  --ring: oklch(0.55 0.13 45);
+
+  /* Warna khusus photobook */
+  --warm-gradient: linear-gradient(
+    135deg,
+    oklch(0.92 0.05 75) 0%,
+    oklch(0.88 0.07 60) 50%,
+    oklch(0.9 0.05 80) 100%
+  );
+  --page-front: oklch(0.99 0.01 80);
+  --page-back: oklch(0.96 0.03 70);
+  --book-shadow: 0 20px 60px oklch(0.3 0.08 40 / 0.3),
+                 0 8px 20px oklch(0.3 0.08 40 / 0.2);
+}
+
+/* ── Reset dasar ──────────────────────────────────────────── */
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+  }
+}
+
+/* ============================================================
+   PHOTOBOOK STYLES
+   
+   • .warm-bg         — background gradient halaman utama
+   • .book-stage      — container perspektif 3D
+   • .book            — posisi relatif semua halaman
+   • .page            — satu halaman (ada animasi flip)
+   • .page.flipped    — halaman yang sudah dibalik
+   • .page-face       — muka depan/belakang halaman
+   • .page-back       — override untuk muka belakang
+   • .photo-frame     — bingkai foto polaroid
+   • .sticker         — animasi stiker mengambang
+   ============================================================ */
+
+.warm-bg {
+  background: var(--warm-gradient);
+  background-attachment: fixed;
+}
+
+/* Perspektif 3D untuk efek buku */
+.book-stage {
+  perspective: 2400px;
+  perspective-origin: 50% 50%;
+}
+
+.book {
+  position: relative;
+  transform-style: preserve-3d;
+}
+
+/* Setiap halaman — posisi absolute bertumpuk */
+.page {
+  position: absolute;
+  inset: 0;
+  transform-origin: left center;
+  transform-style: preserve-3d;
+  /* Durasi animasi flip — ubah nilai detik untuk percepat/perlambat */
+  transition: transform 1s cubic-bezier(0.645, 0.045, 0.355, 1);
+  border-radius: 6px 18px 18px 6px;
+  box-shadow: var(--book-shadow);
+}
+
+/* State halaman yang sudah dibalik ke kiri */
+.page.flipped {
+  transform: rotateY(-180deg);
+}
+
+/* Muka halaman (depan & belakang) */
+.page-face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  border-radius: inherit;
+  overflow: hidden;
+  background: var(--page-front);
+  background-image:
+    radial-gradient(circle at 0% 50%, oklch(0.7 0.08 50 / 0.18), transparent 12%),
+    repeating-linear-gradient(180deg, transparent 0 40px, oklch(0.6 0.05 50 / 0.03) 40px 41px);
+  /* Padding halaman: atas kanan bawah kiri */
+  padding: 40px 56px 56px 72px;
+}
+
+/* Muka belakang — rotasi 180deg supaya tidak kebalik */
+.page-back {
+  transform: rotateY(180deg);
+  background: var(--page-back);
+}
+
+/* ── Animasi stiker mengambang ── */
+@keyframes float-sticker {
+  0%, 100% { transform: translateY(0) rotate(var(--rot, 0deg)); }
+  50% { transform: translateY(-10px) rotate(calc(var(--rot, 0deg) + 4deg)); }
+}
+
+.sticker {
+  animation: float-sticker 4s ease-in-out infinite;
+  filter: drop-shadow(0 6px 10px oklch(0.3 0.08 40 / 0.25));
+}
+
+/* ── Bingkai foto polaroid ── */
+.photo-frame {
+  background: white;
+  /* Padding: atas kiri-kanan bawah (lebih besar untuk efek polaroid) */
+  padding: 10px 10px 28px;
+  box-shadow: 0 8px 18px oklch(0.3 0.08 40 / 0.25), 0 2px 4px oklch(0.3 0.08 40 / 0.15);
+  border-radius: 4px;
+  transition: transform 0.3s ease;
+}
+
+.photo-frame:hover {
+  transform: scale(1.04) rotate(0deg) !important;
+  z-index: 10;
+}
